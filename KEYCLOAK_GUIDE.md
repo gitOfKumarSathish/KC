@@ -1,0 +1,281 @@
+# 🦅 Keycloak Masterclass: The Complete Guide
+*A step-by-step reference for configuring Keycloak, React, and Node.js.*
+
+---
+
+## 🛠️ 0. Prerequisites & Installation (Start Here)
+
+### A. Java Development Kit (JDK)
+Keycloak requires **Java 17** or higher.
+1.  **Check if you have it**: Open Terminal -> `java -version`.
+2.  **If incorrect/missing**: Download **OpenJDK 17** (e.g., from [Eclipse Temurin](https://adoptium.net/temurin/releases/)).
+3.  **Verify**: Ensure `JAVA_HOME` environment variable is set.
+
+### B. Download Keycloak
+1.  Go to [keycloak.org/downloads](https://www.keycloak.org/downloads).
+2.  Download the **Server** distribution (ZIP format).
+3.  **Extract** it to a folder (e.g., `s:\Learn\KC\keycloak-26.0.0`).
+
+### C. Start Keycloak (Dev Mode)
+Dev mode is perfect for learning. It uses a lightweight local database and allows HTTP (no SSL required).
+1.  Open Terminal.
+2.  Navigate to the `bin` folder:
+    ```bash
+    cd s:\Learn\KC\keycloak-26.0.0\bin
+    ```
+3.  Run the start script:
+    *   **Windows**: `kc.bat start-dev`
+    *   **Mac/Linux**: `./kc.sh start-dev`
+4.  Wait for the message: `Listening on: http://0.0.0.0:8080`.
+5.  Open your browser: [http://localhost:8080](http://localhost:8080).
+
+---
+
+## 📦 1. Project Setup & Dependencies
+
+Before calculating roles or tokens, you need the right tools. Here is the exact "Tech Stack" we used.
+
+### A. Frontend (React)
+**Prerequisites**: Node.js (v18+), NPM.
+**Initialization**: `npm create vite@latest web -- --template react`
+
+**Required Packages**:
+1.  **`keycloak-js`**
+    *   *Command*: `npm install keycloak-js`
+    *   *Purpose*: The official adapter. It handles the redirects to Keycloak, parses the tokens, and manages the "Login/Logout" lifecycle.
+2.  **`keycloak-connect`** (Backend)
+    *   *Command*: `npm install keycloak-connect`
+    *   *Purpose*: Middleware to protect Express routes.
+
+### B. Backend (Node.js/Express)
+**Initialization**: `npm init -y`
+
+**Required Packages**:
+`express`, `keycloak-connect`, `express-session`, `@keycloak/keycloak-admin-client`, `cors`.
+
+---
+
+## ⚙️ 2. Keycloak Configuration (Step-by-Step)
+
+### Step 1: Create the Realm 🏰
+1.  Login to Admin Console (`http://localhost:8080`).
+2.  Hover over top-left dropdown -> **Create Realm**.
+3.  **Realm name**: `learning-realm`.
+
+### Step 2: Create Clients 💻
+1.  **Frontend (`learning-client`)**:
+    *   **Public** (Client Auth: OFF).
+    *   **Redirect URIs**: `http://localhost:5173/*`.
+    *   **Web Origins**: `http://localhost:5173`.
+2.  **Backend (`backend-client`)**:
+    *   **Confidential** (Client Auth: ON).
+    *   **Service Accounts Enabled**: ON.
+    *   **Permissions**: Assign `realm-admin` (or `manage-users` + `view-realm`) to the **Service Account Roles**.
+
+### Step 3: SMTP Email Configuration (Gmail) 📧
+*Essential for Invitations and Password Resets.*
+1.  Go to **Realm Settings** -> **Email**.
+2.  **Host**: `smtp.gmail.com` | **Port**: `587` | **Encryption**: `StartTLS`.
+3.  **Password**: Use an **App Password** (Not Google Password).
+
+---
+
+## 🚀 3. Advanced Features Dictionary
+
+| Feature | Description | Implementation Key |
+| :--- | :--- | :--- |
+| **RBAC** | Role Based Access Control | `checkRoles(['admin'])` middleware in Express. |
+| **Service Account** | Backend Login | `kcAdminClient.auth({ moduleId: 'backend-client' ... })`. |
+| **Magic Link** | User Invitation | `adminClient.users.executeActionsEmail` with `UPDATE_PASSWORD`. |
+| **Silent Refresh** | Token Security | `keycloak.updateToken(30)` in frontend API wrapper. |
+| **Themes** | Custom Emails | `.ftl` templates in `themes/my-theme/email`. |
+
+---
+
+## 📂 4. Appendix: Reference Code (The Solution)
+
+### A. Backend: `server.js` (Complete Logic)
+*Handles Auth, RBAC, User Creation, Invitations, and Password Resets.*
+
+```javascript
+const express = require('express');
+const session = require('express-session');
+const Keycloak = require('keycloak-connect');
+const cors = require('cors');
+
+const app = express();
+const port = 3000;
+
+app.use(cors());
+
+// Configure Session
+const memoryStore = new session.MemoryStore();
+app.use(session({
+  secret: 'some-secret',
+  resave: false,
+  saveUninitialized: true,
+  store: memoryStore
+}));
+
+// Configure Keycloak Middleware
+const keycloak = new Keycloak({ store: memoryStore }, {
+  "realm": "learning-realm",
+  "auth-server-url": "http://localhost:8080/",
+  "ssl-required": "external",
+  "resource": "learning-client",
+  "bearer-only": true,
+  "confidential-port": 0
+});
+
+app.use(keycloak.middleware());
+
+// --- Helper: RBAC Middleware ---
+const checkRoles = (allowedRoles) => (req, res, next) => {
+  const token = req.kauth.grant.access_token;
+  if (allowedRoles.some(role => token.hasRealmRole(role))) {
+    next();
+  } else {
+    res.status(403).json({ error: "Access Denied" });
+  }
+}
+
+// --- Helper: Admin Client (Service Account) ---
+async function getAdminClient() {
+  const { default: KeycloakAdminClient } = await import('@keycloak/keycloak-admin-client');
+  const kcAdminClient = new KeycloakAdminClient({
+    baseUrl: 'http://localhost:8080',
+    realmName: 'learning-realm',
+  });
+  await kcAdminClient.auth({
+    grantType: 'client_credentials',
+    clientId: 'backend-client',
+    clientSecret: 'YOUR_CLIENT_SECRET_HERE', // TODO: Replace this
+  });
+  return kcAdminClient;
+}
+
+// --- Routes ---
+
+// 1. Create User (Invitation Logic)
+app.post('/api/users', keycloak.protect(), checkRoles(['admin']), express.json(), async (req, res) => {
+  try {
+    const adminClient = await getAdminClient();
+    const { username, email, firstName, lastName, phoneNumber, role, sendInvitation } = req.body;
+
+    // Build Payload
+    const userPayload = {
+      username, email, firstName, lastName, enabled: true,
+      emailVerified: false,
+      attributes: { phoneNumber: [phoneNumber] }
+    };
+
+    // Legacy Mode: Set "password" if not inviting
+    if (!sendInvitation) {
+      userPayload.credentials = [{ type: 'password', value: 'password', temporary: true }];
+      userPayload.emailVerified = true;
+    }
+
+    const newUser = await adminClient.users.create(userPayload);
+
+    // Assign Role
+    if (role && role !== 'standard') {
+      const roleObject = await adminClient.roles.findOneByName({ name: role });
+      if (roleObject) {
+        await adminClient.users.addRealmRoleMappings({
+          id: newUser.id,
+          roles: [{ id: roleObject.id, name: roleObject.name }]
+        });
+      }
+    }
+
+    // Send Magic Link
+    if (sendInvitation) {
+        try {
+            await adminClient.users.executeActionsEmail({
+                id: newUser.id,
+                actions: ['UPDATE_PASSWORD', 'VERIFY_EMAIL']
+            });
+        } catch (e) {
+            return res.status(201).json({ ...newUser, warning: "User created, but Email failed (Check SMTP)." });
+        }
+    }
+
+    res.status(201).json(newUser);
+  } catch (error) {
+     if (error.response?.status === 409) return res.status(409).json({ error: "User already exists" });
+     res.status(500).json({ error: "Failed to create user" });
+  }
+});
+
+// 2. Self-Service Password Change
+app.put('/api/update-password', keycloak.protect(), express.json(), async (req, res) => {
+    // Logic: Verify 'currentPassword' via Token Exchange, then Set 'newPassword' via Admin Client
+    // (See full code in project)
+});
+
+// 3. Admin Reset Password
+app.put('/api/users/:id/reset-password', keycloak.protect(), checkRoles(['admin']), async (req, res) => {
+    const adminClient = await getAdminClient();
+    await adminClient.users.executeActionsEmail({
+      id: req.params.id,
+      actions: ['UPDATE_PASSWORD']
+    });
+    res.json({ message: "Reset email sent" });
+});
+
+app.listen(port, () => console.log(`Server running on ${port}`));
+```
+
+### B. Frontend: `src/api.js` (Token Interceptor)
+*Ensures every request has a fresh token.*
+
+```javascript
+import keycloak from './keycloak';
+
+export const authorizedFetch = async (url, options = {}) => {
+    try {
+        // Refresh token if it expires in < 30 seconds
+        await keycloak.updateToken(30);
+    } catch (error) {
+        keycloak.login();
+        return;
+    }
+
+    const headers = {
+        ...options.headers,
+        'Authorization': `Bearer ${keycloak.token}`,
+        'Content-Type': 'application/json'
+    };
+
+    return fetch(url, { ...options, headers });
+};
+```
+
+### C. Frontend: `src/UserList.jsx` (Key Components)
+*Shows how to pass the `sendInvitation` flag.*
+
+```javascript
+// Inside create function
+const response = await authorizedFetch('http://localhost:3000/api/users', {
+    method: 'POST',
+    body: JSON.stringify({
+        ...newUser,
+        sendInvitation: true // <--- The Magic Flag
+    })
+});
+```
+
+### D. Theme: `email/html/executeActions.ftl` (Snippet)
+*The simplified HTML template for invitations.*
+
+```html
+<html>
+<body>
+    <h2>Welcome to Our App!</h2>
+    <p>Hello ${user.firstName!user.username},</p>
+    <p>Click below to set your password:</p>
+    <a href="${link}">Set My Password</a>
+    <p>Expires in ${linkExpiration}</p>
+</body>
+</html>
+```

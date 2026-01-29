@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Environment Variables (Secrets)
+.env
+
+# Build Output
+dist/
+build/
+
+# IDE/OS files
+.DS_Store
+.idea/
+.vscode/
+
+# Keycloak Server (Binary & Data - DO NOT COMMIT)
+# Contains sensitive DB data and logs
+keycloak-26.0.0/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
