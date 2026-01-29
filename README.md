@@ -34,21 +34,21 @@ This project demonstrates:
 *   Extract it to this root folder (renaming folder to `keycloak-26.0.0` is recommended/ignored).
 *   **Theme**: Copy the `theme/learning-theme` folder into `keycloak-26.0.0/themes/`.
 *   **Start**: Run `bin/kc.bat start-dev` (Windows) or `bin/kc.sh start-dev` (Mac/Linux).
-*   **Config**: Import the `learning-realm` or configure it manually as per `KEYCLOAK_GUIDE.md`.
+*   **Config**: Import the `learning-realm` or configure it manually.
+    *   📚 **Masterclass Guide**: [KEYCLOAK_GUIDE.md](./KEYCLOAK_GUIDE.md)
+    *   📋 **Task Checklist**: [KEYCLOAK_TASKS.md](./KEYCLOAK_TASKS.md)
 
 ### 2. Backend Setup (`api/`)
 1.  Navigate to the folder: `cd api`.
 2.  Install dependencies: `npm install`.
-3.  **Environment Variables**:
-    *   Copy the example file: `cp .env.example .env`.
-    *   Open `.env` and fill in your **Keycloak Client Secret**.
+3.  **Environment Variables**: Create a `.env` file with the following content:
     ```properties
-    # s:/Learn/KC/api/.env
     KEYCLOAK_REALM=learning-realm
     KEYCLOAK_AUTH_SERVER_URL=http://localhost:8080/
     KEYCLOAK_RESOURCE=learning-client
     KEYCLOAK_BACKEND_CLIENT_ID=backend-client
-    KEYCLOAK_CLIENT_SECRET=Put_Your_Secret_Here
+    # Get this from Keycloak Console -> Clients -> backend-client -> Credentials
+    KEYCLOAK_CLIENT_SECRET=YOUR_SECRET_GOES_HERE
     PORT=3000
     ```
 4.  Start server: `npm run dev`.
@@ -56,11 +56,8 @@ This project demonstrates:
 ### 3. Frontend Setup (`web/`)
 1.  Navigate to the folder: `cd web`.
 2.  Install dependencies: `npm install`.
-3.  **Environment Variables**:
-    *   Copy the example file: `cp .env.example .env`.
-    *   (Optional) Edit `.env` if your Keycloak URL is different.
+3.  **Environment Variables**: Create a `.env` file with the following content:
     ```properties
-    # s:/Learn/KC/web/.env
     VITE_KEYCLOAK_URL=http://localhost:8080/
     VITE_KEYCLOAK_REALM=learning-realm
     VITE_KEYCLOAK_CLIENT_ID=learning-client
