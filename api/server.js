@@ -261,6 +261,70 @@ app.put('/api/users/:id/reset-password', keycloak.protect(), checkRoles(['admin'
   }
 });
 
+// 6. MFA STATUS (GET & TOGGLE)
+app.get('/api/users/me/mfa-status', keycloak.protect(), async (req, res) => {
+  try {
+    const adminClient = await getAdminClient();
+    const userId = req.kauth.grant.access_token.content.sub;
+
+    // 1. Check if user has OTP credential configured
+    const credentials = await adminClient.users.getCredentials({ id: userId });
+    const hasOTP = credentials.some(cred => cred.type === 'otp');
+
+    res.json({ enabled: hasOTP });
+  } catch (error) {
+    console.error("Error checking MFA status", error);
+    res.status(500).json({ error: "Failed to check MFA status" });
+  }
+});
+
+app.put('/api/users/me/mfa-status', keycloak.protect(), express.json(), async (req, res) => {
+  try {
+    const adminClient = await getAdminClient();
+    const userId = req.kauth.grant.access_token.content.sub;
+    const { enable } = req.body;
+
+    if (enable) {
+      // ENABLE: Add 'CONFIGURE_TOTP' to required actions
+      // This forces the user to setup OTP on next login
+      const user = await adminClient.users.findOne({ id: userId });
+      const currentActions = user.requiredActions || [];
+
+      if (!currentActions.includes('CONFIGURE_TOTP')) {
+        await adminClient.users.update({ id: userId }, {
+          requiredActions: [...currentActions, 'CONFIGURE_TOTP']
+        });
+      }
+      res.json({ message: "MFA Setup Initiated. Logout and Login to configure." });
+
+    } else {
+      // DISABLE: Find and Delete ALL OTP credentials (Clean Slate)
+      const credentials = await adminClient.users.getCredentials({ id: userId });
+      const otpCredentials = credentials.filter(cred => cred.type === 'otp');
+
+      // Delete all found OTP credentials
+      for (const cred of otpCredentials) {
+        await adminClient.users.deleteCredential({ id: userId, credentialId: cred.id });
+      }
+
+      // Also remove the required action if they haven't set it up yet
+      const user = await adminClient.users.findOne({ id: userId });
+      if (user.requiredActions && user.requiredActions.includes('CONFIGURE_TOTP')) {
+        const newActions = user.requiredActions.filter(a => a !== 'CONFIGURE_TOTP');
+        await adminClient.users.update({ id: userId }, { requiredActions: newActions });
+      }
+
+      res.json({ message: "MFA Disabled." });
+    }
+
+  } catch (error) {
+    console.error("Error toggling MFA", error);
+    // Return detailed error for frontend debugging
+    const errorMessage = error.response ? (error.response.data?.errorMessage || error.message) : error.message;
+    res.status(500).json({ error: "Failed to update MFA status: " + errorMessage });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Backend listening on http://localhost:${port}`);
 });
