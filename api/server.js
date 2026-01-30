@@ -83,7 +83,23 @@ app.get('/api/users', keycloak.protect(), async (req, res) => {
   try {
     const adminClient = await getAdminClient();
     const users = await adminClient.users.find();
-    res.json(users);
+
+    // Fetch roles for each user (N+1, but acceptable for this scale)
+    const usersWithRoles = await Promise.all(users.map(async (user) => {
+      try {
+        // Use Composite mappings to get effective roles (including inherited ones)
+        const roleMappings = await adminClient.users.listCompositeRealmRoleMappings({ id: user.id });
+
+        // Filter strictly for business roles (Admin, Manager) - Standard is implied by absence
+        const roleNames = roleMappings.map(r => r.name).filter(n => ['admin', 'manager'].includes(n));
+        return { ...user, roles: roleNames };
+      } catch (err) {
+        console.error(`Failed to fetch roles for user ${user.username}`, err);
+        return { ...user, roles: [] };
+      }
+    }));
+
+    res.json(usersWithRoles);
   } catch (error) {
     console.error("Error fetching users", error);
     res.status(500).json({ error: "Failed to fetch users" });
