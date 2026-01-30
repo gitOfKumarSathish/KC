@@ -3,7 +3,7 @@ import './LoginPage.css';
 
 const LoginPage = ({ onLogin, onGithubLogin }) => {
     return (
-        <>
+        <div className="login-page-body">
             <div className="login-container">
                 <div className="login-header">
                     <h1>Welcome</h1>
@@ -21,7 +21,7 @@ const LoginPage = ({ onLogin, onGithubLogin }) => {
                 <li></li><li></li><li></li><li></li><li></li>
                 <li></li><li></li><li></li><li></li><li></li>
             </ul>
-        </>
+        </div>
     );
 };
 

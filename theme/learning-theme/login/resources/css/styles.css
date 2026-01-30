@@ -1,183 +1,234 @@
-/* refined-styles.css */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+/* Modern Indigo Keycloak Theme (Revised) */
+/* Matches the React App Design System */
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* --- Global Layout --- */
 body {
-    margin: 0;
-    padding: 0;
-    font-family: 'Inter', sans-serif !important;
-    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
-    height: 100vh;
+    background: linear-gradient(135deg, #4f46e5 0%, #312e81 100%) !important;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+    color: #111827 !important;
+    min-height: 100vh;
+    /* Allow scrolling if content is tall */
     display: flex;
     justify-content: center;
     align-items: center;
-    color: white !important;
+    margin: 0;
+    padding: 20px;
+    /* Add padding for small screens */
+    box-sizing: border-box;
 }
 
-/* Main Card */
-#kc-content,
-.card-pf,
-.login-pf-page .card-pf {
-    background: rgba(255, 255, 255, 0.05) !important;
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-radius: 24px !important;
-    padding: 50px !important;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    box-sizing: border-box !important;
-    max-width: 480px !important;
-    width: 100% !important;
-    margin: 0 auto;
-}
-
+/* Hide the default Keycloak logo if it looks bad, or style it */
 #kc-header {
-    margin-bottom: 40px;
-    text-align: center;
+    display: none;
 }
 
 #kc-header-wrapper {
-    font-size: 1.8rem;
-    font-weight: 600;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.9) !important;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    display: none;
 }
 
-#kc-page-title {
-    font-size: 1.5rem !important;
-    font-weight: 300 !important;
-    text-align: center;
-    margin-bottom: 30px;
-    color: rgba(255, 255, 255, 0.8) !important;
+/* --- Login Card --- */
+.login-pf-page {
+    /* Remove padding here as Body handles it */
+    padding: 0 !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin: auto;
+    /* Center in flex container */
 }
 
-label {
-    display: block;
-    margin-bottom: 8px;
-    font-size: 0.9rem !important;
-    color: rgba(255, 255, 255, 0.7) !important;
-    font-weight: 500 !important;
+#kc-content {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    padding: 40px !important;
+    width: 100%;
+    max-width: 450px !important;
+    box-sizing: border-box;
+    position: relative;
+    margin: 0 auto !important;
 }
 
-/* Standard Inputs (Username) */
-input.form-control,
-#username {
+#kc-content-wrapper {
+    margin: 0 !important;
+}
+
+/* --- Headings --- */
+h1#kc-page-title {
+    font-size: 1.75rem !important;
+    font-weight: 700 !important;
+    color: #111827 !important;
+    text-align: center !important;
+    margin-top: 0 !important;
+    margin-bottom: 2rem !important;
+    text-transform: none !important;
+    font-family: 'Inter', sans-serif !important;
+}
+
+/* --- Form Elements --- */
+form#kc-form-login {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.pf-c-form-control,
+input.form-control {
     width: 100% !important;
-    padding: 14px 16px !important;
-    background: rgba(0, 0, 0, 0.2) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    border-radius: 12px !important;
-    color: white !important;
-    font-size: 1rem !important;
-    transition: all 0.3s ease;
-    outline: none !important;
     box-sizing: border-box !important;
-}
-
-input.form-control:focus,
-#username:focus {
-    background: rgba(0, 0, 0, 0.3) !important;
-    border-color: rgba(255, 255, 255, 0.5) !important;
-    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.05) !important;
-}
-
-/* PASSWORD GROUP FIX */
-/* Keycloak wraps password and eye icon in a div with class pf-c-form-control-group */
-.pf-c-form-control-group {
-    display: flex !important;
-    align-items: center !important;
-    background: rgba(0, 0, 0, 0.2) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    border-radius: 12px !important;
-    overflow: hidden !important;
-    /* Ensures contents don't spill out */
-}
-
-/* The password input inside the group */
-.pf-c-form-control-group input {
-    background: transparent !important;
-    /* Remove background so the group background shows */
-    border: none !important;
+    padding: 12px 16px !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 8px !important;
+    font-size: 1rem !important;
+    font-family: 'Inter', sans-serif !important;
+    transition: all 0.2s;
+    height: auto !important;
     box-shadow: none !important;
-    flex-grow: 1 !important;
-    /* Take remaining space */
+}
+
+.pf-c-form-control:focus,
+input.form-control:focus {
+    border-color: #4f46e5 !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1) !important;
+}
+
+/* Labels */
+label.control-label {
+    font-weight: 500 !important;
+    font-size: 0.875rem !important;
+    color: #374151 !important;
+    margin-bottom: 4px !important;
+    display: block !important;
+}
+
+/* --- Buttons --- */
+#kc-login {
+    background-color: #4f46e5 !important;
+    background-image: none !important;
+    border: none !important;
     color: white !important;
-    padding: 14px 16px !important;
+    font-weight: 600 !important;
+    padding: 12px !important;
+    border-radius: 8px !important;
+    font-size: 1rem !important;
+    cursor: pointer !important;
+    width: 100% !important;
+    transition: background-color 0.2s;
+    margin-top: 10px;
     height: auto !important;
 }
 
-.pf-c-form-control-group input:focus {
-    box-shadow: none !important;
-    /* Remove focus ring on inner input */
-    outline: none !important;
+#kc-login:hover {
+    background-color: #4338ca !important;
 }
 
-/* The Eye Icon Button */
-.pf-c-button.pf-m-control {
-    background: transparent !important;
-    border: none !important;
-    color: rgba(255, 255, 255, 0.7) !important;
-    padding: 0 15px !important;
+/* --- Social Providers (Robust) --- */
+#kc-social-providers ul {
+    list-style: none;
+    padding: 0;
+    margin-top: 24px;
+    border-top: 1px solid #e5e7eb;
+    padding-top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Base ZOCIAL Button Style - Generic Fallback */
+a.zocial {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 12px 16px !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    font-size: 0.95rem !important;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+    height: auto !important;
+    line-height: normal !important;
+
+    /* Default Style (Light/Gray) if no specific match */
+    background: #f3f4f6 !important;
+    color: #1f2937 !important;
+    border: 1px solid #e5e7eb !important;
+    transition: all 0.2s;
+}
+
+a.zocial:hover {
+    background-color: #e5e7eb !important;
+}
+
+/* Specific GitHub Matchors */
+/* We target ANY zocial button that has "github" in class OR href */
+a.zocial.github,
+a.zocial[class*="github"],
+a.zocial[href*="github"] {
+    background: #24292e !important;
+    color: white !important;
+    border: 1px solid #24292e !important;
+}
+
+a.zocial.github:hover,
+a.zocial[class*="github"]:hover,
+a.zocial[href*="github"]:hover {
+    background: #181a1b !important;
+    border-color: #181a1b !important;
+}
+
+/* Icons */
+a.zocial span.text {
+    padding: 0 !important;
+    margin-left: 10px !important;
+}
+
+a.zocial:before {
     margin: 0 !important;
-    font-size: 1.2rem !important;
-    /* Make icon visible */
-    cursor: pointer !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* --- Feedback / Alerts --- */
+.alert-error,
+.alert-warning {
+    background-color: #fef2f2 !important;
+    border: 1px solid #fee2e2 !important;
+    color: #991b1b !important;
+    padding: 12px !important;
+    border-radius: 8px !important;
+    margin-bottom: 20px !important;
+    font-size: 0.9rem !important;
     display: flex;
     align-items: center;
-    justify-content: center;
-    height: 100%;
 }
 
-.pf-c-button.pf-m-control:hover {
-    color: white !important;
+.alert-success {
+    background-color: #ecfdf5 !important;
+    border: 1px solid #d1fae5 !important;
+    color: #065f46 !important;
 }
 
-/* Submit Button */
-input[type="submit"],
-button#kc-login {
-    background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%) !important;
-    color: #003366 !important;
-    border: none !important;
-    padding: 16px !important;
-    font-size: 1.1rem !important;
-    font-weight: 700 !important;
-    border-radius: 12px !important;
-    cursor: pointer !important;
-    width: 100% !important;
-    margin-top: 30px !important;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    box-shadow: 0 10px 20px rgba(0, 242, 254, 0.2) !important;
-    transition: transform 0.2s, box-shadow 0.2s !important;
+/* --- Links --- */
+#kc-form-options span a,
+#kc-registration span a {
+    color: #4f46e5 !important;
+    text-decoration: none !important;
+    font-weight: 500 !important;
+    font-size: 0.9rem !important;
 }
 
-input[type="submit"]:hover,
-button#kc-login:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 15px 30px rgba(0, 242, 254, 0.4) !important;
+#kc-form-options span a:hover,
+#kc-registration span a:hover {
+    color: #4338ca !important;
+    text-decoration: underline !important;
 }
 
-/* Links */
-#kc-form-options span,
-a {
-    color: rgba(255, 255, 255, 0.6) !important;
-    font-size: 0.9rem;
-    text-decoration: none;
-}
-
-a:hover {
-    color: white !important;
-}
-
-.alert-warning {
-    background: rgba(255, 165, 0, 0.2);
-    border: 1px solid orange;
-    color: white;
-    border-radius: 8px;
-    padding: 10px;
-}
-
-#kc-footer {
-    display: none !important;
+#kc-locale {
+    display: none;
 }
