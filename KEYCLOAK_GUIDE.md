@@ -15,13 +15,14 @@
     - [Step 2: Create Clients 💻](#step-2-create-clients-)
     - [Step 3: SMTP Email Configuration (Gmail) 📧](#step-3-smtp-email-configuration-gmail-)
   - [🚀 3. Advanced Features Dictionary](#-3-advanced-features-dictionary)
+  - [🛡️ 4. Advanced Security: 2-Step Verification (MFA)](#️-4-advanced-security-2-step-verification-mfa)
+    - [Step 1: Backend Logic (The Toggle)](#step-1-backend-logic-the-toggle)
+    - [Step 2: Authentication Flow (Conditional)](#step-2-authentication-flow-conditional)
+      - [Troubleshooting: "Stuck in OTP Setup Loop"](#troubleshooting-stuck-in-otp-setup-loop)
   - [🌎 5. OAuth: Social Login (GitHub)](#-5-oauth-social-login-github)
     - [Step 1: GitHub App](#step-1-github-app)
     - [Step 2: Keycloak Provider](#step-2-keycloak-provider)
     - [Step 3: Verify](#step-3-verify)
-    - [Step 1: Backend Logic (The Toggle)](#step-1-backend-logic-the-toggle)
-    - [Step 2: Authentication Flow (Conditional)](#step-2-authentication-flow-conditional)
-      - [Troubleshooting: "Stuck in OTP Setup Loop"](#troubleshooting-stuck-in-otp-setup-loop)
   - [🛠️ 6. Developer Notes \& Findings (Troubleshooting)](#️-6-developer-notes--findings-troubleshooting)
     - [A. MFA "Infinite Loop" Fix](#a-mfa-infinite-loop-fix)
     - [B. "Admin Client" API Methods](#b-admin-client-api-methods)
@@ -142,31 +143,9 @@ Before calculating roles or tokens, you need the right tools. Here is the exact 
 
 ---
 
-## 🌎 5. OAuth: Social Login (GitHub)
+---
 
-Enable "Login with GitHub" in 5 minutes.
-
-### Step 1: GitHub App
-
-1. Log in to GitHub -> Settings -> Developer settings -> **OAuth Apps**.
-2. **New OAuth App**.
-3. **Homepage URL**: `http://localhost:8080` (Keycloak).
-4. **Authorization callback URL**: `http://localhost:8080/realms/learning-realm/broker/github/endpoint`.
-5. **Save**.
-6. Copy **Client ID** and generate a **Client Secret**.
-
-### Step 2: Keycloak Provider
-
-1. Keycloak Admin -> **Identity Providers**.
-2. Select **GitHub**.
-3. Paste **Client ID** and **Client Secret**.
-4. **Save**.
-
-### Step 3: Verify
-
-1. Logout of your app.
-2. Click "Sign In".
-3. You should see the **GitHub** button on the login screen.
+## 🛡️ 4. Advanced Security: 2-Step Verification (MFA)
 
 Keycloak supports Time-based One-Time Passwords (TOTP). We will make this **User-Controlled**.
 
@@ -199,6 +178,41 @@ If you disable MFA but Keycloak still asks for it:
 
 ---
 
+## 🌎 5. OAuth: Social Login (GitHub)
+
+Enable "Login with GitHub" in 5 minutes.
+
+### Step 1: GitHub App
+
+1. Log in to GitHub -> Settings -> Developer settings -> **OAuth Apps**.
+2. **New OAuth App**.
+3. **Homepage URL**: `http://localhost:8080` (Keycloak).
+4. **Authorization callback URL**: `http://localhost:8080/realms/learning-realm/broker/github/endpoint`.
+5. **Save**.
+6. Copy **Client ID** and generate a **Client Secret**.
+
+### Step 2: Keycloak Provider
+
+1. Keycloak Admin -> **Identity Providers**.
+2. Select **GitHub**.
+3. Paste **Client ID** and **Client Secret**.
+4. **Save**.
+
+### Step 3: Verify
+
+1. Logout of your app.
+2. Click **Sign In with GitHub**.
+    - *Note*: Ensure your Frontend is running with `check-sso` (see [Project Setup](#-1-project-setup--dependencies)).
+3. You should be redirected to GitHub to authorize the app.
+
+![GitHub Client ID Config](assets/keycloak_github_config.png)
+*Fig: Configuring Client ID in Keycloak*
+
+![GitHub OAuth App Config](assets/github_oauth_config.png)
+*Fig: Configuring Redirect URI in GitHub*
+
+---
+
 ## 🛠️ 6. Developer Notes & Findings (Troubleshooting)
 
 ### A. MFA "Infinite Loop" Fix
@@ -221,8 +235,6 @@ To fully disable MFA for a user, do not just remove the first credential found.
 
 - **Scenario**: A user might have failed setups or multiple "zombie" credentials (e.g., from testing).
 - **Solution**: Iterate through **ALL** credentials of type `otp` and delete them all. This ensures a "Hard Reset" of the MFA state.
-
----
 
 ## 📂 4. Appendix: Reference Code (The Solution)
 

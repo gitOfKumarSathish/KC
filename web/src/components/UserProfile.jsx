@@ -52,53 +52,46 @@ const UserProfile = ({ userProfile }) => {
     };
 
     return (
-        <div style={{ background: 'white', padding: '20px', borderRadius: '10px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', marginBottom: '20px' }}>
-            <h3 style={{ marginTop: 0, color: '#555', borderBottom: '2px solid #eee', paddingBottom: '10px' }}>User Profile</h3>
+        <div className="card">
+            <h3 className="card-header">User Profile</h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px', marginTop: '15px' }}>
                 <div>
-                    <strong style={{ display: 'block', color: '#888', fontSize: '0.85rem' }}>Full Name</strong>
-                    <div style={{ fontSize: '1.1rem', color: '#333' }}>{userProfile?.firstName} {userProfile?.lastName}</div>
+                    <strong className="form-label">Full Name</strong>
+                    <div style={{ fontSize: '1.1rem', color: 'var(--text-main)' }}>{userProfile?.firstName} {userProfile?.lastName}</div>
                 </div>
                 <div>
-                    <strong style={{ display: 'block', color: '#888', fontSize: '0.85rem' }}>Username</strong>
-                    <div style={{ fontSize: '1.1rem', color: '#333' }}>{userProfile?.username}</div>
+                    <strong className="form-label">Username</strong>
+                    <div style={{ fontSize: '1.1rem', color: 'var(--text-main)' }}>{userProfile?.username}</div>
                 </div>
                 <div>
-                    <strong style={{ display: 'block', color: '#888', fontSize: '0.85rem' }}>Email</strong>
-                    <div style={{ fontSize: '1.1rem', color: '#333' }}>{userProfile?.email}</div>
+                    <strong className="form-label">Email</strong>
+                    <div style={{ fontSize: '1.1rem', color: 'var(--text-main)' }}>{userProfile?.email}</div>
                 </div>
                 <div>
-                    <strong style={{ display: 'block', color: '#888', fontSize: '0.85rem' }}>Keycloak ID</strong>
-                    <div style={{ fontSize: '0.9rem', color: '#666', fontFamily: 'monospace' }}>{userProfile?.id}</div>
+                    <strong className="form-label">Keycloak ID</strong>
+                    <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontFamily: 'monospace' }}>{userProfile?.id}</div>
                 </div>
             </div>
 
-            <div style={{ marginTop: '20px', paddingTop: '15px', borderTop: '1px solid #eee' }}>
-                <h4 style={{ margin: '0 0 10px 0', color: '#555' }}>Security Settings</h4>
+            <div className="mt-4" style={{ paddingTop: '15px', borderTop: '1px solid var(--border-color)' }}>
+                <h4 style={{ margin: '0 0 10px 0', color: 'var(--text-muted)' }}>Security Settings</h4>
 
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#f9f9f9', padding: '15px', borderRadius: '8px' }}>
+                <div className="d-flex align-center justify-between" style={{ background: 'var(--bg-color)', padding: '15px', borderRadius: 'var(--radius-md)' }}>
                     <div>
                         <strong style={{ display: 'block', marginBottom: '5px' }}>Two-Factor Authentication (2FA)</strong>
-                        <span style={{ fontSize: '0.9rem', color: '#666' }}>
+                        <span className="text-muted" style={{ fontSize: '0.9rem' }}>
                             {mfaEnabled
                                 ? "Your account is secured with an Authenticator App."
                                 : "Add an extra layer of security to your account."}
                         </span>
-                        {statusMessage && <div style={{ fontSize: '0.85rem', color: '#007bff', marginTop: '5px' }}>{statusMessage}</div>}
+                        {statusMessage && <div style={{ fontSize: '0.85rem', color: 'var(--primary-color)', marginTop: '5px' }}>{statusMessage}</div>}
                     </div>
 
                     <button
                         onClick={toggleMfa}
                         disabled={loading}
-                        style={{
-                            padding: '10px 20px',
-                            background: mfaEnabled ? '#dc3545' : '#28a745',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '5px',
-                            cursor: loading ? 'wait' : 'pointer',
-                            fontWeight: 'bold'
-                        }}
+                        className={`btn ${mfaEnabled ? 'btn-danger' : 'btn-success'}`}
+                        style={{ minWidth: '140px' }}
                     >
                         {loading ? 'Processing...' : (mfaEnabled ? 'Disable 2FA' : 'Enable 2FA')}
                     </button>

@@ -1,7 +1,7 @@
 import React from 'react';
 import './LoginPage.css';
 
-const LoginPage = ({ onLogin }) => {
+const LoginPage = ({ onLogin, onGithubLogin }) => {
     return (
         <>
             <div className="login-container">
@@ -11,6 +11,9 @@ const LoginPage = ({ onLogin }) => {
                 </div>
                 <button className="login-btn" onClick={onLogin}>
                     Sign In with SS0
+                </button>
+                <button className="login-btn github-btn" onClick={onGithubLogin} style={{ marginTop: '15px' }}>
+                    Sign In with GitHub
                 </button>
             </div>
 
